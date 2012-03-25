@@ -14,6 +14,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
 from django.utils.safestring import mark_safe
 from django.core.cache import cache
+from django.core.exceptions import ObjectDoesNotExist
 from django.utils.hashcompat import md5_constructor
 from django.utils.encoding import iri_to_uri
 
@@ -297,6 +298,8 @@ def create_metadata_instance(metadata_class, instance):
     try:
         path = instance.get_absolute_url()
     except AttributeError:
+        return
+    except ObjectDoesNotExist:
         return
 
     # Look for an existing object with this path
