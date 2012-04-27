@@ -3,6 +3,7 @@
 
 from django.db.models import signals
 from django.db.utils import DatabaseError
+from django.db import transaction
 from django.contrib.contenttypes.models import ContentType
 from rollyourown.seo.base import registry, populate_metadata
 from rollyourown.seo import models as seo_models
@@ -18,12 +19,15 @@ def _syncdb_handler(app, created_models, verbosity, **kwargs):
                     continue
                 if verbosity > 0:
                     print "Populating %s for %s.%s" % (Metadata._meta.verbose_name_plural, model._meta.app_label, model._meta.object_name)
-                try:
-                    # If a model is using SEO & it's schema is managed by South migrations rather than syncdb, this call will fail when doing an syncdb for the first time.
-                    populate_metadata(model, InstanceMetadata)
-                except DatabaseError as err:
-                    print "Database Error (%s) when trying to populate %s for %s.%s. Ignoring (as assumed that this is a migration related issue)" % (str(err), Metadata._meta.verbose_name_plural, model._meta.app_label, model._meta.object_name)
-                    pass
+                with transaction.commit_manually():
+                    try:
+                        # If a model is using SEO & it's schema is managed by South migrations rather than syncdb, this call will fail when doing an syncdb for the first time.
+                        populate_metadata(model, InstanceMetadata)
+                        transaction.commit()
+                    except DatabaseError as err:
+                        transaction.rollback()
+                        print "Database Error (%s) when trying to populate %s for %s.%s. Ignoring (as assumed that this is a migration related issue)" % (str(err), Metadata._meta.verbose_name_plural, model._meta.app_label, model._meta.object_name)
+                        pass
 
 
 
