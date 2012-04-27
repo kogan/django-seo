@@ -344,7 +344,10 @@ def _update_callback(model_class, sender, instance, created, **kwargs):
         then this shouldn't happen.
         I've held it to be more important to avoid double path entries.
     """
-    create_metadata_instance(model_class, instance)
+    try:
+        create_metadata_instance(model_class, instance)
+    except:
+        pass
 
 
 def _delete_callback(model_class, sender, instance,  **kwargs):
