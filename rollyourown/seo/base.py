@@ -5,7 +5,7 @@
 #    * Documentation
 #    * Make backends optional: Meta.backends = (path, modelinstance/model, view)
 
-from django.db import models
+from django.db import models, transaction
 from django.utils.translation import ugettext_lazy as _
 from django.utils.datastructures import SortedDict
 from django.utils.functional import curry
@@ -344,10 +344,12 @@ def _update_callback(model_class, sender, instance, created, **kwargs):
         then this shouldn't happen.
         I've held it to be more important to avoid double path entries.
     """
-    try:
-        create_metadata_instance(model_class, instance)
-    except:
-        pass
+    with transaction.commit_manually():
+        try:
+            create_metadata_instance(model_class, instance)
+            transaction.commit()
+        except:
+            transaction.rollback()
 
 
 def _delete_callback(model_class, sender, instance,  **kwargs):
