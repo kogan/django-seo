@@ -137,7 +137,7 @@ class MetaTag(MetadataField):
 
     def render(self, value):
         # TODO: HTML/XHTML?
-        return u'<meta name="%s" content="%s" />' % (self.name, value)
+        return u'<meta name="%s" content="%s">' % (self.name, value)
 
 class KeywordTag(MetaTag):
     def __init__(self, name=None, head=True, verbose_name=None, editable=True, 
