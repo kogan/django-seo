@@ -15,7 +15,6 @@ from django.conf import settings
 from django.utils.safestring import mark_safe
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
-from django.utils.hashcompat import md5_constructor
 from django.utils.encoding import iri_to_uri
 
 from rollyourown.seo.utils import NotSet, Literal
@@ -23,6 +22,7 @@ from rollyourown.seo.options import Options
 from rollyourown.seo.fields import MetadataField, Tag, MetaTag, KeywordTag, Raw
 from rollyourown.seo.backends import backend_registry, RESERVED_FIELD_NAMES
 
+from hashlib import md5
 
 registry = SortedDict()
 
@@ -36,9 +36,9 @@ class FormattedMetadata(object):
         self.__metadata = metadata
         if metadata._meta.use_cache:
             if metadata._meta.use_sites and site:
-                hexpath = md5_constructor(iri_to_uri(site.domain+path)).hexdigest() 
+                hexpath = md5(iri_to_uri(site.domain+path)).hexdigest() 
             else:
-                hexpath = md5_constructor(iri_to_uri(path)).hexdigest() 
+                hexpath = md5(iri_to_uri(path)).hexdigest() 
             if metadata._meta.use_i18n:
                 self.__cache_prefix = 'rollyourown.seo.%s.%s.%s' % (self.__metadata.__class__.__name__, hexpath, language)
             else:
