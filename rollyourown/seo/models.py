@@ -14,6 +14,3 @@ for app in settings.INSTALLED_APPS:
 # if SEO_MODELS is defined, create a default Metadata class
 if hasattr(settings, 'SEO_MODELS'):
     __import__('rollyourown.seo.default')
-
-from rollyourown.seo.base import register_signals
-register_signals()

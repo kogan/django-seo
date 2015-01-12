@@ -1,3 +1,5 @@
+from django.apps import AppConfig
+
 VERSION = (1, 0, 0, 'beta', 1)
 __authors__ = ["Will Hardy <django-seo@willhardy.com.au>"]
 
@@ -13,3 +15,10 @@ def get_version():
         version = '%s %s %s' % (version, VERSION[3], VERSION[4])
     return version
 __version__ = get_version()
+
+class SEOConfig(AppConfig):
+    name = 'rollyourown.seo'
+
+    def ready(self):
+        from rollyourown.seo.base import register_signals
+        register_signals()

@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
+try:
+    from django.db.models.options import get_verbose_name
+except ImportError:
+    from django.utils.text import camel_case_to_spaces as get_verbose_name
 
-from django.db.models.options import get_verbose_name
 from django.db import models
 from django.utils.datastructures import SortedDict
 
@@ -81,8 +84,10 @@ class Options(object):
         # This is a little dangerous, but because we set __module__ to __name__, the model needs tobe accessible here
         globals()[model.__name__] = model
 
-    def _set_seo_models(self, value):
-        """ Gets the actual models to be used. """
+    @property
+    def seo_models(self):
+        value = self._seo_models_value
+
         seo_models = []
         for model_name in value:
             if "." in model_name:
@@ -94,7 +99,24 @@ class Options(object):
                 app = models.get_app(model_name)
                 if app:
                     seo_models.extend(models.get_models(app))
-    
+
+        return seo_models
+
+    def _set_seo_models(self, value):
+        """ Gets the actual models to be used. """
+        self._seo_models_value = value
+        return
+
+        seo_models = []
+        for model_name in value:
+            if "." in model_name:
+                app_label, model_name = model_name.split(".", 1)
+                model = models.get_model(app_label, model_name)
+                if model:
+                    seo_models.append(model)
+            else:
+                app = models.get_app(model_name)
+                if app:
+                    seo_models.extend(models.get_models(app))
+
         self.seo_models = seo_models
-
-
